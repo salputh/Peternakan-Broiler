@@ -1,0 +1,43 @@
+{
+    "name": "maiden-voyage-software/blade-emojis",
+    "description": "A package to easily make use of Emojis in your Laravel Blade views.",
+    "keywords": ["Blade", "Emojis", "Laravel"],
+    "homepage": "https://github.com/MaidenVoyageSoftware/blade-emojis",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Maiden Voyage Software"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "blade-ui-kit/blade-icons": "^1.6",
+        "illuminate/support": "^10.0|^11.0|^12.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0",
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "BladeUI\\Emojis\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "BladeUI\\Emojis\\BladeEmojisServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
