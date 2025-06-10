@@ -61,7 +61,7 @@ class Periode extends Model
         });
     }
 
-    public function kandangs()
+    public function kandang()
     {
         return $this->belongsTo(Kandangs::class, 'kandang_id');
     }
@@ -93,5 +93,17 @@ class Periode extends Model
     public function getRouteKeyName()
     {
         return 'slug';
+    }
+
+    public function deplesis()
+    {
+        return $this->hasManyThrough(
+            Deplesi::class,
+            DataPeriode::class,
+            'periode_id', // Foreign key on data_periodes table
+            'data_periode_id', // Foreign key on deplesis table
+            'id', // Local key on periodes table
+            'id' // Local key on data_periodes table
+        );
     }
 }

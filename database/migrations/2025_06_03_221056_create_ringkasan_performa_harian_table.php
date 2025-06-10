@@ -32,6 +32,7 @@ return new class extends Migration
             $table->integer('jumlah_afkir_harian')->default(0)->comment('Jumlah ayam diafkir pada hari itu');
             $table->integer('jumlah_deplesi_harian')->default(0)->comment('Hasil: jumlah_mati_harian + jumlah_afkir_harian');
             $table->decimal('cum_deplesi_harian', 5, 2)->default(0)->comment('Persentase deplesi kumulatif dari awal periode');
+            $table->decimal('std_cum_deplesi_harian', 5, 2)->default(0)->comment('Persentase deplesi kumulatif dari awal periode');
 
             // Data Pakan (Standard & Aktual)
             $table->decimal('std_pakan_zak_harian', 10, 2)->default(0)->comment('Target pakan standar harian dalam zak');

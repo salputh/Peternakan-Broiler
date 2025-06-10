@@ -42,31 +42,31 @@ class StokObatController extends Controller
           // untuk setiap jenis obat yang relevan dengan periode dan kandang aktif.
           try {
                $ringkasan = StokObat::select(
-                    'stok_obat.id', // Sertakan ID obat
+                    'stok_obat.id',
                     'stok_obat.nama_obat',
                     'stok_obat.kategori',
                     'stok_obat.satuan',
-                    DB::raw('COALESCE(SUM(stok_obat_masuk.jumlah_masuk), 0) as jumlah_masuk'),
-                    DB::raw('COALESCE(SUM(stok_obat_keluar.jumlah_keluar), 0) as jumlah_terpakai'),
-                    DB::raw('(COALESCE(SUM(stok_obat_masuk.jumlah_masuk), 0) - COALESCE(SUM(stok_obat_keluar.jumlah_keluar), 0)) as jumlah_tersedia')
+                    DB::raw('COALESCE(SUM(DISTINCT stok_obat_masuk.jumlah_masuk), 0) as jumlah_masuk'),
+                    DB::raw('COALESCE(SUM(DISTINCT stok_obat_keluar.jumlah_keluar), 0) as jumlah_terpakai'),
+                    DB::raw('(COALESCE(SUM(DISTINCT stok_obat_masuk.jumlah_masuk), 0) - COALESCE(SUM(DISTINCT stok_obat_keluar.jumlah_keluar), 0)) as jumlah_tersedia')
                )
                     ->leftJoin('stok_obat_masuk', function ($join) use ($periodeAktif, $kandang) {
-                         // Join stok_obat_masuk dan filter berdasarkan periode_id dan kandang_id yang aktif
                          $join->on('stok_obat.id', '=', 'stok_obat_masuk.stok_obat_id')
                               ->where('stok_obat_masuk.periode_id', $periodeAktif->id)
-                              ->where('stok_obat_masuk.kandang_id', $kandang->id);
+                              ->where('stok_obat_masuk.kandang_id', $kandang->id)
+                              ->where('stok_obat_masuk.tanggal', '<=', now());
                     })
                     ->leftJoin('stok_obat_keluar', function ($join) use ($periodeAktif) {
-                         // Join stok_obat_keluar dan filter berdasarkan data_periode_id yang terkait dengan periode aktif
                          $join->on('stok_obat.id', '=', 'stok_obat_keluar.stok_obat_id')
                               ->whereIn('stok_obat_keluar.data_periode_id', function ($query) use ($periodeAktif) {
-                                   $query->select('data_periode_id')
-                                        ->from('data_periodes') // Mengacu ke tabel data_periodes
-                                        ->where('periode_id', $periodeAktif->id); // Filter data_periodes berdasarkan periode aktif
-                              });
+                                   $query->select('id')
+                                        ->from('data_periodes')
+                                        ->where('periode_id', $periodeAktif->id);
+                              })
+                              ->where('stok_obat_keluar.tanggal', '<=', now());
                     })
-                    ->groupBy('stok_obat.id', 'stok_obat.nama_obat', 'stok_obat.kategori', 'stok_obat.satuan') // Kelompokkan berdasarkan atribut obat
-                    ->orderBy('stok_obat.nama_obat') // Urutkan hasil berdasarkan nama obat
+                    ->groupBy('stok_obat.id', 'stok_obat.nama_obat', 'stok_obat.kategori', 'stok_obat.satuan')
+                    ->orderBy('stok_obat.nama_obat')
                     ->get();
           } catch (\Exception $e) {
                Log::error('Error fetching aggregated medicine stock data:', [
@@ -103,16 +103,16 @@ class StokObatController extends Controller
           try {
                $keluarList = StokObatKeluar::with(['stok_obat', 'dataPeriodes']) // Eager load relasi obat dan dataPeriodes
                     ->whereHas('dataPeriodes', function ($query) use ($periodeAktif) {
-                         $query->where('data_periode_id', $periodeAktif->periode_id); // Filter data_periode yang terhubung ke periode aktif
+                         $query->where('data_periode_id', $periodeAktif->id); // Menggunakan periode_id yang benar
                     })
-                    // Mengurutkan berdasarkan ID atau created_at jika tidak ada kolom tanggal langsung di StokObatKeluar
-                    ->orderBy('id', 'desc')
+                    ->where('tanggal', '<=', now()) // Menambahkan filter tanggal
+                    ->orderBy('tanggal', 'desc') // Mengurutkan berdasarkan tanggal
                     ->get();
           } catch (\Exception $e) {
                Log::error('Error fetching outgoing medicine stock list:', [
-                    'data_periode_id' => $periodeAktif->periode_id,
+                    'data_periode_id' => $periodeAktif->id,
                     'message' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString() // Sertakan trace untuk debugging
+                    'trace' => $e->getTraceAsString()
                ]);
                return back()->with('error', 'Terjadi kesalahan saat mengambil daftar stok obat keluar: ' . $e->getMessage());
           }

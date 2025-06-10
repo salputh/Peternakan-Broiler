@@ -29,28 +29,42 @@ class DataPeriode extends Model
         'timestamps' => true
     ];
 
+    /**
+     * Relasi ke model Periode.
+     * Nama metode 'periodes' harus sesuai dengan pemanggilan di Observer.
+     */
     public function periodes()
     {
-        return $this->belongsTo(Periode::class, 'periode_id');
+        return $this->belongsTo(Periode::class, 'periode_id', 'id');
     }
 
+    /**
+     * Relasi ke StokPakanKeluar (jika digunakan, pastikan modelnya ada)
+     */
     public function stokPakanKeluar()
     {
         return $this->hasMany(StokPakanKeluar::class, 'data_periode_id', 'id');
     }
 
-    public function stokObatKeluar()
-    {
-        return $this->hasMany(StokObatKeluar::class, 'data_periode_id', 'id');
-    }
-
+    /**
+     * Relasi ke BodyWeight (jika digunakan, pastikan modelnya ada)
+     */
     public function bodyWeight()
     {
         return $this->hasOne(BodyWeight::class, 'data_periode_id', 'id');
     }
 
+    /**
+     * Relasi ke Deplesi (jika digunakan, pastikan modelnya ada)
+     */
     public function deplesis()
     {
         return $this->hasOne(Deplesi::class, 'data_periode_id', 'id');
     }
+
+    // Tambahkan relasi lain jika ada, misalnya stokObatKeluar
+    // public function stokObatKeluar()
+    // {
+    //     return $this->hasMany(StokObatKeluar::class, 'data_periode_id', 'id');
+    // }
 }

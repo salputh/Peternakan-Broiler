@@ -73,7 +73,7 @@ class RingkasanPerformaHarian extends Model
           'tanggal_catat' => 'date',
      ];
 
-     public function periodes()
+     public function periode()
      {
           return $this->belongsTo(Periode::class, 'periode_id');
      }
@@ -81,9 +81,9 @@ class RingkasanPerformaHarian extends Model
      /**
       * Mendapatkan kandang yang memiliki ringkasan performa harian ini.
       */
-     public function kandangs()
+     public function kandang()
      {
-          return $this->belongsTo(Kandangs::class, 'kandang_id');
+          return $this->belongsTo(Kandangs::class, 'kandang_id', 'id');
      }
 
      /**

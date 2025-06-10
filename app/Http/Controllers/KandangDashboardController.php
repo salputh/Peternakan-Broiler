@@ -10,6 +10,7 @@ use App\Models\Kandangs;
 use App\Models\StandardPerformaHarian;
 use App\Models\StokObat;
 use App\Models\PakanJenis;
+use App\Models\RingkasanPerformaHarian;
 
 class KandangDashboardController extends Controller
 {
@@ -35,6 +36,11 @@ class KandangDashboardController extends Controller
           $standardHariIni = null;
           $pakanJenisOptions = PakanJenis::all();
           $stokObatOptions = collect();
+
+          // TAMBAHAN: Initialize ringkasan performa harian
+          $ringkasanPerformaHarian = collect();
+          $ringkasanHariIni = null;
+          $ringkasanTerbaru = collect();
 
 
           // 3) Jika ada periode aktif, ambil stoknya, kalau enggak, stok kosong
@@ -107,6 +113,18 @@ class KandangDashboardController extends Controller
                     ->groupBy('stok_obat.id', 'stok_obat.nama_obat', 'stok_obat.kategori', 'stok_obat.satuan')
                     ->orderBy('stok_obat.nama_obat')
                     ->get();
+
+               // TAMBAHAN: Ambil data ringkasan performa harian untuk periode aktif
+               $ringkasanPerformaHarian = RingkasanPerformaHarian::where('periode_id', $periodeAktif->id)
+                    ->where('kandang_id', $kandang->id)
+                    ->orderBy('tanggal_catat', 'desc')
+                    ->get();
+
+               // Ambil ringkasan untuk hari ini (usia aktif)
+               $ringkasanHariIni = $ringkasanPerformaHarian->where('usia_ke', $usiaAktif)->first();
+
+               // Ambil 7 hari terakhir untuk grafik/tren
+               $ringkasanTerbaru = $ringkasanPerformaHarian->take(7);
           }
 
 
@@ -122,6 +140,9 @@ class KandangDashboardController extends Controller
                'standardPerforma',
                'pakanJenisOptions',
                'stokObatOptions',
+               'ringkasanPerformaHarian',
+               'ringkasanHariIni',
+               'ringkasanTerbaru',
           ));
      }
 

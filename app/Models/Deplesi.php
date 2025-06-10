@@ -20,7 +20,7 @@ class Deplesi extends Model
         'tanggal',
     ];
 
-    public function dataPeriodes()
+    public function dataPeriode()
     {
         return $this->belongsTo(DataPeriode::class, 'data_periode_id', 'id');
     }

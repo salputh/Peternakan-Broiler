@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DataPeriode;
 use App\Models\Deplesi;
+use App\Models\StokPakan;
 use App\Models\StokPakanKeluar;
 use App\Models\StokObatKeluar; // Pastikan ini di-import
 use App\Models\BodyWeight;
@@ -62,9 +63,13 @@ class RecordHarianController extends Controller
                     ]
                );
 
+               // Cari stok_pakan_id berdasarkan pakan_jenis_id
+               $stokPakan = StokPakan::where('pakan_jenis_id', $validatedData['pakan_keluar_jenis_id'])->first();
 
-               // 3. Simpan data transaksi menggunakan data_periode_id yang baru dibuat/diperbarui
-               // Karena jumlah_mati dan jumlah_afkir required, blok ini akan selalu dijalankan
+               if (!$stokPakan) {
+                    throw new \Exception('Stok pakan tidak ditemukan untuk jenis pakan yang dipilih');
+               }
+
                Deplesi::create([
                     'data_periode_id' => $dataPeriode->id,
                     'jumlah_mati' => $validatedData['jumlah_mati'],
@@ -78,7 +83,7 @@ class RecordHarianController extends Controller
                StokPakanKeluar::create([
                     'data_periode_id' => $dataPeriode->id,
                     'jumlah_keluar' => $validatedData['pakan_keluar_jumlah'],
-                    'stok_pakan_id' => $validatedData['pakan_keluar_jenis_id'],
+                    'stok_pakan_id' => $stokPakan->id,
                     'tanggal' => $dataPeriode->tanggal, // Ambil dari data_periode yang baru dibuat
                ]);
 

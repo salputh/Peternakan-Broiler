@@ -352,8 +352,8 @@
                                    <th class="border border-gray-300 px-2 py-1 text-center text-xs bg-sky-100">GR/<br>EK</th>
                                    <th class="border border-gray-300 px-2 py-1 text-center text-xs bg-sky-100">CUM <br>GR/EK</th>
                                    <!-- ACTUAL PAKAN -->
-                                   <th class="border border-gray-300 px-2 py-1 text-center text-xs bg-gray-50">ZAK</th>
                                    <th class="border border-gray-300 px-2 py-1 text-center text-xs bg-gray-50">JENIS</th>
+                                   <th class="border border-gray-300 px-2 py-1 text-center text-xs bg-gray-50">ZAK</th>
                                    <th class="border border-gray-300 px-2 py-1 text-center text-xs bg-gray-50">CUM <br>ZAK</th>
                                    <th class="border border-gray-300 px-2 py-1 text-center text-xs bg-gray-50">GR/<br>EK</th>
                                    <th class="border border-gray-300 px-2 py-1 text-center text-xs bg-gray-50">CUM <br>GR/EK</th>
@@ -399,11 +399,15 @@
                               // Jika $periodeAktif null, ini akan default ke now() (walaupun loop tidak akan jalan karena if di bawah)
                               $startDate = $periodeAktif ? \Carbon\Carbon::parse($periodeAktif->tanggal_mulai) : now(); //
                               $dates = [];
-                              for($i = 0; $i < 35; $i++) {
+
+                              for($i = 0; $i < 50; $i++) {
                                    $dates[]=$startDate->copy()->addDays($i);
                                    }
                                    $currentWeek = 0;
                                    $dayCount = 0;
+                                   $jumlahAyamSisa = $periodeAktif->jumlah_ayam; // Jumlah ayam awal
+                                   $totalDeplesiKumulatif = 0;
+                                   $totalPanenKumulatif = 0;
                                    @endphp
 
                                    @if($standardPerforma && $standardPerforma->count() > 0)
@@ -423,82 +427,98 @@
                                    // PERBAIKAN DI SINI: Menggunakan $standardPerforma (camelCase)
                                    $standard = $standardPerforma->where('age', $dayCount)->first(); //
                                    // PERBAIKAN DI SINI: Menggunakan $actualPerforma (camelCase)
+                                   $ringkasanHariTertentu = $ringkasanPerformaHarian->where('usia_ke', $dayCount)->first(); //
+                                   // Perhitungan kumulatif untuk hari ini
+                                   $deplesiHariIni = $ringkasanHariTertentu ? ($ringkasanHariTertentu->jumlah_deplesi_harian ?? 0) : 0;
+                                   $panenHariIni = $ringkasanHariTertentu ? ($ringkasanHariTertentu->jumlah_ayam_dipanen ?? 0) : 0;
+
+                                   // Update total kumulatif
+                                   $totalDeplesiKumulatif += $deplesiHariIni;
+                                   $totalPanenKumulatif += $panenHariIni;
+
+                                   // Hitung sisa ayam untuk hari ini
+                                   $sisaAyamHariIni = $periodeAktif->jumlah_ayam - $totalDeplesiKumulatif - $totalPanenKumulatif;
+
+                                   // Hitung saldo sebelum panen (ayam hidup)
+                                   $saldoSebelumPanen = $periodeAktif->jumlah_ayam - $totalDeplesiKumulatif;
                                    @endphp
                                    <tr class="bg-white hover:bg-orange-100! transition duration-300 ">
                                         <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $date->format('d M') }}</td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $standard['age'] }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $standard ? $standard->age : '' }}</td>
                                         <!-- DEPLESI ACTUAL -->
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->jumlah_mati_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->jumlah_afkir_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->jumlah_deplesi_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->cum_deplesi_harian . '%' : '' }}</td>
                                         <!-- DEPLESI STD -->
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-amber-100">{{ number_format($standard['deplesi_std_cum'] * 1 , 2) }}%</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-amber-100"> {{ $standard ? number_format($standard->deplesi_std_cum, 2) : '' }}%</td>
 
                                         <!-- PAKAN STD -->
-                                        <td class="bg-sky-100 border border-gray-300 px-2 py-2.5 text-center text-xs ">{{ $standard['pakan_std_zak'] }}</td>
-                                        <td class="bg-sky-100 border border-gray-300 px-2 py-2.5 text-center text-xs ">{{ $standard['pakan_std_cum_zak'] }}</td>
-                                        <td class="bg-sky-100 border border-gray-300 px-2 py-2.5 text-center text-xs ">{{ $standard['pakan_std_gr_ek'] }}</td>
-                                        <td class="bg-sky-100 border border-gray-300 px-2 py-2.5 text-center text-xs ">{{ $standard['pakan_std_cum_gr_ek'] }}</td>
+                                        <td class="bg-sky-100 border border-gray-300 px-2 py-2.5 text-center text-xs ">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->std_pakan_zak_harian : '' }}</td>
+                                        <td class="bg-sky-100 border border-gray-300 px-2 py-2.5 text-center text-xs ">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->std_cum_zak_harian : '' }}</td>
+                                        <td class="bg-sky-100 border border-gray-300 px-2 py-2.5 text-center text-xs ">{{ $standard ? $standard->pakan_std_gr_ek : '' }}</td>
+                                        <td class="bg-sky-100 border border-gray-300 px-2 py-2.5 text-center text-xs "> {{ $standard ? $standard->pakan_std_cum_gr_ek : '' }}</td>
                                         <!-- PAKAN ACTUAL -->
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center font-semibold text-xs"></td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center font-bold text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->act_jenis_pakan_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->act_zak_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->act_cum_zak_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->act_gr_per_ekor_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->act_cum_gr_per_ekor_harian : '' }}</td>
                                         <!-- DELTA PAKAN -->
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->delta_zak_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->delta_cum_zak_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->delta_gr_per_ekor_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->delta_cum_gr_per_ekor_harian : '' }}</td>
                                         <!-- BODY WEIGHT STD -->
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-green-100">{{ $standard['bw_std_abw'] }}</td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-green-100">{{ $standard['bw_std_dg'] }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-green-100">{{ $standard ? $standard->bw_std_abw : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-green-100">{{ $standard ? $standard->bw_std_dg : '' }}</td>
                                         <!-- BODY WEIGHT ACTUAL -->
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->act_bw_abw_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->act_bw_dg_gr_harian : '' }}</td>
 
                                         <!-- SELISIH BODY WEIGHT -->
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->delta_bw_abw_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->delta_bw_dg_gr_harian : '' }}</td>
                                         <!-- OBAT & VIT -->
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->obat_jenis_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->obat_jumlah_harian : '' }}</td>
 
                                         <!-- MIN TEMP -->
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-zinc-100">{{$standard['std_suhu_min']}}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-zinc-100">{{$standard ? $standard->std_suhu_min : ''}}</td>
                                         <!-- MAX TEMP -->
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-zinc-100">{{$standard['std_suhu_max']}}</td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-zinc-100">{{$standard['std_kelembapan']}}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-zinc-100">{{$standard ? $standard->std_suhu_max : ''}}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-zinc-100">{{$standard ? $standard->std_kelembapan : ''}}</td>
                                         <!-- MIN TEMP -->
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->act_lingkungan_suhu_min_harian . '°C' : '' }}</td>
                                         <!-- MAX TEMP -->
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->act_lingkungan_suhu_max_harian . '°C' : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->act_lingkungan_persen_hum_harian . '%': '' }}</td>
 
                                         <!-- FCR -->
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-yellow-100">{{ number_format($standard['fcr_std'], 3) }}</td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-yellow-100">{{$standard ? number_format($standard->fcr_std, 3) : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->act_fcr_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->delta_fcr_harian : '' }}</td>
                                         <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-red-100"></td>
 
                                         <!-- IP -->
                                         <td class="border border-gray-300 px-2 py-2.5 text-center text-xs bg-pink-200">{{ $standard['ip_std'] ?? '0' }}</td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->act_index_performance_harian : '' }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $ringkasanHariTertentu ? $ringkasanHariTertentu->delta_index_performance_harian : '' }}</td>
 
                                         <!-- SALDO -->
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ number_format($periodeAktif->jumlah_ayam) }}</td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs"></td>
-                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ number_format($periodeAktif->jumlah_ayam) }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ number_format($saldoSebelumPanen) }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ $panenHariIni > 0 ? number_format($panenHariIni) : 0 }}</td>
+                                        <td class="border border-gray-300 px-2 py-2.5 text-center text-xs">{{ number_format($sisaAyamHariIni) }}</td>
                                    </tr>
                                    @endforeach
+
 
                                    @else
                                    <tr>
                                         <td colspan="44" class="border border-gray-300 px-2 py-2.5 text-center text-xl">Data standar performa tidak tersedia</td>
                                    </tr>
                                    @endif
+
                          </tbody>
                     </table>
                </div>

@@ -10,7 +10,6 @@
       <title>Developer Login - Sistem Manajemen Peternakan</title>
       @vite('resources/css/app.css')
 </head>
-Aku Salman
 
 <body class="min-h-screen bg-gray-50">
       <div class="flex min-h-screen items-center justify-center p-4">
