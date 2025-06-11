@@ -3,9 +3,11 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -15,22 +17,17 @@ return new class extends Migration
             $table->text('email');
             $table->text('phone');
             $table->text('password');
-            $table->text('role')->default('owner');
             $table->text('photo')->nullable();
-
-            // FK ke peternakan nanti ditambahkan di migration peternakan
             $table->bigInteger('peternakan_id')->unsigned()->nullable();
-            $table->foreign('peternakan_id')
-                ->references('id')
-                ->on('peternakans')
-                ->onDelete('set null');
-
             $table->timestamps();
 
             $table->unique('slug');
             $table->unique('email');
-            $table->check("role in ('developer', 'owner', 'manager', 'operator')");
         });
+
+        // Tambahkan enum constraint setelah tabel dibuat
+        DB::statement("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'owner'");
+        DB::statement("ALTER TABLE users ADD CONSTRAINT check_role CHECK (role IN ('developer', 'owner', 'manager', 'operator'))");
     }
 
     public function down(): void

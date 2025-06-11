@@ -13,12 +13,9 @@ class OwnerSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Disable FK checks (SQLite)
-        DB::statement('PRAGMA foreign_keys = OFF;');
-
         DB::beginTransaction();
         try {
-            // 2. Data owner + peternakan
+            // Data owner + peternakan
             $ownerData = [
                 [
                     'nama'        => 'Owner Misjiwati',
@@ -76,9 +73,6 @@ class OwnerSeeder extends Seeder
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
-        } finally {
-            // 3. Re-enable FK checks
-            DB::statement('PRAGMA foreign_keys = ON;');
         }
     }
 }
