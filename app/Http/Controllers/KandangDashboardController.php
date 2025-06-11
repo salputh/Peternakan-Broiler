@@ -47,7 +47,11 @@ class KandangDashboardController extends Controller
           if ($periodeAktif) {
                $stokPakan = $periodeAktif
                     ->stokPakans() // Asumsi relasi ini masih ada di Periode.php
-                    ->with('pakanJenis') // Asumsi relasi ini masih ada di StokPakan.php
+                    ->with([
+                         'pakanJenis',
+                         'stokPakanMasuk',
+                         'stokPakanKeluar'
+                    ]) // Asumsi relasi ini masih ada di StokPakan.php
                     ->get();
                // --- Fetch Semua Data Standard Performa ---
                $standardPerforma = StandardPerformaHarian::all();

@@ -12,18 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('data_periodes', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->bigInteger('periode_id')->unsigned();
-            $table->foreign('periode_id')
-                ->references('id')
-                ->on('periodes')
-                ->onDelete('cascade');
+            $table->id();
+            $table->foreignId('periode_id')->constrained('periodes')->onDelete('cascade');
+            $table->index('periode_id');
             $table->integer('usia');
-            $table->decimal('suhu_min', 8, 2);
-            $table->decimal('suhu_max', 8, 2);
-            $table->decimal('kelembapan', 8, 2);
+            $table->decimal('suhu_min')->notnull();
+            $table->decimal('suhu_max')->notnull();
+            $table->decimal('kelembapan')->notnull();
             $table->date('tanggal');
-            $table->text('catatan')->nullable();
+            $table->string('catatan')->nullable();
+
             $table->timestamps();
         });
     }

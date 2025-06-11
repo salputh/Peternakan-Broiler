@@ -12,28 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('stok_pakans', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->bigInteger('periode_id')->unsigned();
-            $table->foreign('periode_id')
-                ->references('id')
-                ->on('periodes')
-                ->onDelete('cascade');
-            $table->bigInteger('kandang_id')->unsigned();
-            $table->foreign('kandang_id')
-                ->references('id')
-                ->on('kandangs')
-                ->onDelete('cascade');
-            $table->bigInteger('pakan_jenis_id')->unsigned();
-            $table->foreign('pakan_jenis_id')
-                ->references('id')
-                ->on('pakan_jenis')
-                ->onDelete('cascade');
-            $table->integer('jumlah_stok')->default(0);
-            $table->timestamps();
-
+            $table->id();
+            $table->foreignId('periode_id')->constrained('periodes')->onDelete('cascade');
             $table->index('periode_id');
+            $table->foreignId('kandang_id')->constrained('kandangs')->onDelete('cascade');
             $table->index('kandang_id');
+            $table->foreignId('pakan_jenis_id')->constrained('pakan_jenis')->onDelete('cascade');
             $table->index('pakan_jenis_id');
+            $table->integer('jumlah_stok')->default(0);
+
+            $table->timestamps();
         });
     }
 

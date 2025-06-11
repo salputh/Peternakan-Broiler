@@ -12,20 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('stok_pakan_keluar', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->foreignId('stok_pakan_id')
-                ->constrained('stok_pakans')
-                ->onDelete('cascade');
+            $table->id();
+            $table->foreignId('stok_pakan_id')->constrained('stok_pakans')->onDelete('cascade');
             $table->index('stok_pakan_id');
-            $table->foreignId('data_periode_id')
-                ->constrained('data_periodes')
-                ->onDelete('cascade');
+            $table->foreignId('data_periode_id')->constrained('data_periodes')->onDelete('cascade');
             $table->index('data_periode_id');
             $table->date('tanggal');
             $table->integer('jumlah_keluar');
 
-            // Gunakan Laravel timestamps (lebih sederhana dan reliable)
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrentOnUpdate();
         });
     }
 

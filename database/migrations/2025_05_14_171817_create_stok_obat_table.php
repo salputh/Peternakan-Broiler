@@ -12,19 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('stok_obat', function (Blueprint $table) {
-            $table->bigIncrements('id'); // Using 'obat_id' as primary key
-            $table->string('nama_obat'); // Nama obat harus unik
+            $table->id(); // Menggunakan 'obat_id' sebagai primary key
+            $table->string('nama_obat')->unique(); // Nama obat harus unik
             $table->string('kategori')->nullable(); // Kategori bisa kosong (NULL)
             $table->string('satuan')->nullable(); // Satuan bisa kosong (NULL)
-            $table->timestampsTz(); // created_at and updated_at with timezone
-
-            // Add unique constraint separately
-            $table->unique('nama_obat');
-
-            // Set the table engine for PostgreSQL
-            $table->engine = 'InnoDB';
-            // Use UUID if needed
-            // $table->uuid('id')->primary();
+            $table->timestamps(); // created_at dan updated_at
         });
     }
 

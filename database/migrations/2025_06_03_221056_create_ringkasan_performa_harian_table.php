@@ -12,17 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ringkasan_performa_harian', function (Blueprint $table) {
-            $table->bigIncrements('id'); // Kolom 'id' sebagai primary key (bigint) auto-increment
+            $table->id(); // Kolom 'id' sebagai primary key (bigint) auto-increment
 
             // Foreign Keys dan Unique Constraint
-            $table->bigInteger('data_periode_id')->unsigned();
-            $table->foreign('data_periode_id')->references('id')->on('data_periodes')->onDelete('cascade')->comment('Foreign Key ke tabel data_periodes');
-
-            $table->bigInteger('periode_id')->unsigned();
-            $table->foreign('periode_id')->references('id')->on('periodes')->onDelete('cascade')->comment('Foreign Key ke tabel periodes');
-
-            $table->bigInteger('kandang_id')->unsigned();
-            $table->foreign('kandang_id')->references('id')->on('kandangs')->onDelete('cascade')->comment('Foreign Key ke tabel kandangs');
+            $table->foreignId('data_periode_id')->constrained('data_periodes')->onDelete('cascade')->comment('Foreign Key ke tabel data_periodes');
+            $table->foreignId('periode_id')->constrained('periodes')->onDelete('cascade')->comment('Foreign Key ke tabel periodes');
+            $table->foreignId('kandang_id')->constrained('kandangs')->onDelete('cascade')->comment('Foreign Key ke tabel kandangs');
 
             // Unique constraint untuk memastikan satu ringkasan per hari per periode per kandang
             $table->unique(['data_periode_id', 'periode_id', 'kandang_id'], 'unique_ringkasan_harian_per_day');
@@ -97,7 +92,7 @@ return new class extends Migration
             $table->integer('jumlah_ayam_dipanen')->nullable()->default(0)->comment('Jumlah ayam dipanen pada hari itu');
             $table->integer('jumlah_ayam_akhir')->comment('Jumlah ayam di akhir hari');
 
-            $table->timestamps();
+            $table->timestamps(); // Kolom created_at dan updated_at
         });
     }
 

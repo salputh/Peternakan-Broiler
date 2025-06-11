@@ -12,20 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('deplesis', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->bigInteger('data_periode_id');
-            $table->foreign('data_periode_id')
-                ->references('id')
-                ->on('data_periodes')
-                ->onDelete('cascade');
+            $table->id();
+            $table->foreignId('data_periode_id')->constrained('data_periodes')->onDelete('cascade');
+            $table->index('data_periode_id');
             $table->integer('jumlah_mati')->default(0);
             $table->integer('jumlah_afkir')->default(0);
-            $table->text('foto')->nullable();
-            $table->text('keterangan')->nullable();
+            $table->string('foto')->nullable();
+            $table->string('keterangan')->nullable();
             $table->date('tanggal');
-            $table->timestamps();
 
-            $table->index('data_periode_id');
+            $table->timestamps();
         });
     }
 

@@ -12,20 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('body_weight', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->bigInteger('data_periode_id');
-            $table->foreign('data_periode_id')
-                ->references('id')
-                ->on('data_periodes')
-                ->onDelete('cascade');
+            $table->id();
+            $table->foreignId('data_periode_id')->constrained('data_periodes')->onDelete('cascade');
+            $table->index('data_periode_id');
             $table->integer('body_weight_hasil');
             $table->date('tanggal');
-            $table->timestamps();
-        });
 
-        // Add index separately for PostgreSQL
-        Schema::table('body_weight', function (Blueprint $table) {
-            $table->index('data_periode_id');
+            $table->timestamps();
         });
     }
 
