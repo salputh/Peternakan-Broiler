@@ -12,13 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('stok_pakan_masuk', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('stok_pakan_id')->constrained('stok_pakans')->onDelete('cascade');
-            $table->index('stok_pakan_id');
+            $table->bigIncrements('id');
+            $table->bigInteger('stok_pakan_id')->unsigned();
+            $table->foreign('stok_pakan_id')
+                ->references('id')
+                ->on('stok_pakans')
+                ->onDelete('cascade');
             $table->date('tanggal');
             $table->integer('jumlah_masuk');
-
             $table->timestamps();
+        });
+
+        // Create index separately for PostgreSQL
+        Schema::table('stok_pakan_masuk', function (Blueprint $table) {
+            $table->index('stok_pakan_id');
         });
     }
 

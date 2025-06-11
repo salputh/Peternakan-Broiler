@@ -10,17 +10,19 @@ return new class extends Migration
       {
             // 1) Buat tabel peternakan + owner_id FK → users.user_id
             Schema::create('peternakans', function (Blueprint $table) {
-                  $table->id();
-                  $table->string('nama');
-                  $table->string('slug')->unique();
+                  $table->bigIncrements('id');
+                  $table->string('nama', 255);
+                  $table->string('slug', 255)->unique();
 
-                  $table->foreignId('owner_id')->nullable()
-                        ->constrained('users')
-                        ->nullOnDelete(); // Laravel-style FK constraint
+                  $table->bigInteger('owner_id')->unsigned()->nullable();
+                  $table->foreign('owner_id')
+                        ->references('id')
+                        ->on('users')
+                        ->onDelete('set null'); // PostgreSQL-style FK constraint
 
                   $table->boolean('is_active')->default(true);
 
-                  $table->timestamps();
+                  $table->timestampsTz();
             });
 
             // 2) Sekarang tambahkan FK users.peternakan_id → peternakan.peternakan_id

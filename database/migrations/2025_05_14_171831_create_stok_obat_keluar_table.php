@@ -12,14 +12,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('stok_obat_keluar', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('stok_obat_id')->constrained('stok_obat')->onDelete('cascade');
-            $table->index('stok_obat_id');
-            $table->foreignId('data_periode_id')->constrained('data_periodes')->onDelete('cascade');
-            $table->index('data_periode_id');
+            $table->bigIncrements('id');
+            $table->bigInteger('stok_obat_id')->unsigned();
+            $table->foreign('stok_obat_id')
+                ->references('id')
+                ->on('stok_obat')
+                ->onDelete('cascade');
+            $table->bigInteger('data_periode_id')->unsigned();
+            $table->foreign('data_periode_id')
+                ->references('id')
+                ->on('data_periodes')
+                ->onDelete('cascade');
             $table->date('tanggal');
             $table->integer('jumlah_keluar');
             $table->timestamps();
+
+            $table->index('stok_obat_id');
+            $table->index('data_periode_id');
         });
     }
 

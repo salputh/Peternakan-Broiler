@@ -9,22 +9,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->string('email')->unique();
-            $table->string('phone', 20);
-            $table->string('password');
-            $table->enum('role', ['developer', 'owner', 'manager', 'operator'])->default('owner');
-            $table->string('photo')->nullable();
+            $table->bigIncrements('id');
+            $table->text('name');
+            $table->text('slug');
+            $table->text('email');
+            $table->text('phone');
+            $table->text('password');
+            $table->text('role')->default('owner');
+            $table->text('photo')->nullable();
 
             // FK ke peternakan nanti ditambahkan di migration peternakan
-            $table->foreignId('peternakan_id')
-                ->nullable()
-                ->constrained('peternakans')
-                ->nullOnDelete();
+            $table->bigInteger('peternakan_id')->unsigned()->nullable();
+            $table->foreign('peternakan_id')
+                ->references('id')
+                ->on('peternakans')
+                ->onDelete('set null');
 
             $table->timestamps();
+
+            $table->unique('slug');
+            $table->unique('email');
+            $table->check("role in ('developer', 'owner', 'manager', 'operator')");
         });
     }
 
