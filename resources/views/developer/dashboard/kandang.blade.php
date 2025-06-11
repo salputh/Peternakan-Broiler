@@ -525,7 +525,7 @@
           </div>
      </div>
 
-     <x-catat-performa-harian-modal :periodeAktif=" $periodeAktif" :pakanJenisOptions="$pakanJenisOptions" :stokObatOptions="$stokObatOptions" :standardHariIni="$standardHariIni" :ringkasanPerformaHarian="$ringkasanPerformaHarian" />
+     <x-catat-performa-harian-modal :periodeAktif=" $periodeAktif" :pakanJenisOptions="$pakanJenisOptions" :stokObatOptions="$stokObatOptions" :standardHariIni="$standardHariIni" />
 
      @elseif(is_null($periode))
      <!-- Empty period warning display -->

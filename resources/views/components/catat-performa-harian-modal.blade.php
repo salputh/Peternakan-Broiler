@@ -58,37 +58,18 @@
                                    <div class="rounded-lg p-4 shadow-md outline-1 outline-gray-200">
                                         <div class="space-y-4">
                                              {{-- Date and Age inputs --}}
-                                             @php
-                                             // Cari usia terakhir yang sudah terisi
-                                             $usiaSelanjutnya = 1; // default usia pertama
-                                             $tanggalSelanjutnya = $periodeAktif->tanggal_mulai; // default tanggal mulai periode
-
-                                             if($ringkasanPerformaHarian && $ringkasanPerformaHarian->count() > 0) {
-                                             // Ambil usia tertinggi yang sudah ada
-                                             $usiaMax = $ringkasanPerformaHarian->max('usia_ke');
-                                             $usiaSelanjutnya = $usiaMax + 1;
-
-                                             // Hitung tanggal berdasarkan usia selanjutnya
-                                             $tanggalSelanjutnya = \Carbon\Carbon::parse($periodeAktif->tanggal_mulai)
-                                             ->addDays($usiaSelanjutnya - 1)
-                                             ->format('Y-m-d');
-                                             } else {
-                                             // Jika belum ada data, gunakan tanggal mulai periode
-                                             $tanggalSelanjutnya = \Carbon\Carbon::parse($periodeAktif->tanggal_mulai)->format('Y-m-d');
-                                             }
-                                             @endphp
                                              <div class="grid grid-cols-2 gap-4">
                                                   <div>
                                                        <label for="tanggal" class="block text-sm font-medium text-gray-700">Tanggal</label>
                                                        <input type="date" name="tanggal" id="tanggal"
                                                             class="mt-1 block w-full rounded-md border-gray-300 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 px-2 py-1.5"
-                                                            value="{{ $tanggalSelanjutnya }}" required>
+                                                            value="{{ now()->toDateString() }}" required>
                                                   </div>
                                                   <div>
                                                        <label for="usia" class="block text-sm font-medium text-gray-700">Usia (Hari)</label>
                                                        <input type="number" name="usia" id="usia"
                                                             class="mt-1 block w-full rounded-md border-gray-300  outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 px-2 py-1.5"
-                                                            value="{{ $usiaSelanjutnya }}" required>
+                                                            value="{{ (int)(\Carbon\Carbon::parse($periodeAktif->tanggal_mulai)->diffInDays(now()) + 1) }}" required>
                                                   </div>
                                              </div>
 
@@ -205,28 +186,16 @@
                                                                  </button>
                                                                  <ul x-show="open" @click.away="open = false" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox" aria-labelledby="pakan-listbox-label">
                                                                       @foreach($pakanJenisOptions as $pakanJenis)
-                                                                      @php
-                                                                      // Cari stok pakan untuk jenis pakan ini di periode aktif
-                                                                      $stokPakan = $periodeAktif->stokPakans()->where('pakan_jenis_id', $pakanJenis->id)->first();
-                                                                      $stokTersedia = 0;
-
-                                                                      if ($stokPakan) {
-                                                                      $totalMasuk = $stokPakan->stokPakanMasuk->sum('jumlah_masuk');
-                                                                      $totalKeluar = $stokPakan->stokPakanKeluar->sum('jumlah_keluar');
-                                                                      $stokTersedia = $totalMasuk - $totalKeluar;
-                                                                      }
-                                                                      @endphp
-                                                                      <li @click="selectedPakan = '{{ $pakanJenis->kode }} - {{ $pakanJenis->keterangan }}'; selectedPakanId = {{ $pakanJenis->id }}; open = false; $dispatch('input', '{{ $pakanJenis->id }}')" class="relative cursor-default select-none py-2 pr-9 pl-3 text-gray-900 hover:bg-indigo-600 hover:text-white" id="pakan-listbox-option-{{ $loop->index }}" role="option">
+                                                                      <li @click="selectedPakan = '{{ $pakanJenis->kode }} - {{ $pakanJenis->keterangan }}'; selectedPakanId = '{{ $pakanJenis->id }}'; open = false; $dispatch('input', '{{ $pakanJenis->id }}')" class="relative cursor-default select-none py-2 pr-9 pl-3 text-gray-900 hover:bg-indigo-600 hover:text-white" id="pakan-listbox-option-{{ $loop->index }}" role="option">
                                                                            <div class="flex items-center">
-                                                                                <span x-bind:class="selectedPakanId == {{ $pakanJenis->id }} ? 'font-semibold' : 'font-normal'" class="ml-3 block truncate">{{ $pakanJenis->kode }} - {{ $pakanJenis->keterangan }}</span>
+                                                                                <span x-bind:class="selectedPakanId === '{{ $pakanJenis->id }}' ? 'font-semibold' : 'font-normal'" class="ml-3 block truncate">{{ $pakanJenis->kode }} - {{ $pakanJenis->keterangan }}</span>
                                                                            </div>
-                                                                           <span x-show="selectedPakanId == {{ $pakanJenis->id }}" class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 hover:text-white">
+                                                                           <span x-show="selectedPakanId === '{{ $pakanJenis->id }}'" class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 hover:text-white">
                                                                                 <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                                                                      <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" />
                                                                                 </svg>
                                                                            </span>
                                                                       </li>
-
                                                                       @endforeach
                                                                  </ul>
                                                                  <input type="hidden" name="pakan_keluar_jenis_id" x-model="selectedPakanId">
@@ -235,40 +204,11 @@
                                                   </div>
                                                   <div class="mt-3">
                                                        <label for="pakan_keluar_jumlah" class="block text-sm font-medium text-gray-700">Jumlah ZAK</label>
-                                                       <div class="flex items-center gap-2">
-                                                            <div class="relative flex-1">
-                                                                 <input type="number" name="pakan_keluar_jumlah" id="pakan_keluar_jumlah"
-                                                                      placeholder="STD: {{ number_format((float)($standardHariIni->pakan_std_zak ?? 0)) }}"
-                                                                      data-debug-placeholder-suhu-min-raw="{{ $standardHariIni->pakan_std_zak ?? 'DEBUG_NULL' }}"
-                                                                      class="px-2 py-1.5 block w-full rounded-md border-gray-300 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                                                                      required>
-                                                            </div>
-                                                            <div x-show="selectedPakanId" class="flex items-center whitespace-nowrap">
-                                                                 <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                                                                      Tersedia: <span x-text="(() => {
-                                                                      if (!selectedPakanId) return '- zak';
-                                                                      
-                                                                      // Buat mapping stok dari PHP
-                                                                      const stokMapping = {
-                                                                           @foreach($periodeAktif->stokPakans ?? [] as $stok)
-                                                                           {{ $stok->pakan_jenis_id }}: {
-                                                                                jumlah_stok: {{ $stok->jumlah_stok }},
-                                                                                satuan: '{{ $stok->pakanJenis->satuan ?? 'zak' }}'
-                                                                           },
-                                                                           @endforeach
-                                                                      };
-                                                                      
-                                                                      const stokData = stokMapping[selectedPakanId];
-                                                                      if (stokData) {
-                                                                           return stokData.jumlah_stok + ' ' + stokData.satuan;
-                                                                      }
-                                                                      
-                                                                      return '0 zak';
-                                                                 })()" class="ml-1 font-semibold">
-                                                                      </span>
-                                                                 </span>
-                                                            </div>
-                                                       </div>
+                                                       <input type="number" name="pakan_keluar_jumlah" id="pakan_keluar_jumlah"
+                                                            placeholder="STD: {{ number_format((float)($standardHariIni->pakan_std_zak ?? 0)) }}"
+                                                            data-debug-placeholder-suhu-min-raw="{{ $standardHariIni->pakan_std_zak ?? 'DEBUG_NULL' }}"
+                                                            class="px-2 py-1.5 mt-2 block w-full rounded-md border-gray-300 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                                                            required>
                                                   </div>
                                              </div>
 
@@ -310,14 +250,24 @@
                                                             </div>
                                                        </div>
                                                        <div>
-                                                            <label for="obat_keluar_jumlah" class="block text-sm font-medium text-gray-700">
-                                                                 Jumlah
-                                                            </label>
-                                                            <div class="flex items-center gap-2 whitespace-nowrap">
-                                                                 <input type="number" name="obat_keluar_jumlah" id="obat_keluar_jumlah" placeholder="0" class="px-2 py-1.5 mt-1 block w-full rounded-md border-gray-300 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" required>
-
-                                                                 <div x-show="selectedObatId" class="mt-1 flex items-center">
-                                                                      <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Tersedia:<span x-text="(() => {const obat = {{ Js::from($stokObatOptions) }}.find(o => o.id == selectedObatId);if (obat) {const jumlahTersedia = obat.jumlah_tersedia ?? 0;const satuan = obat.satuan ? ' ' + obat.satuan : '';return jumlahTersedia + ' pcs';}return '';})()" class="ml-1 font-semibold">
+                                                            <label for="obat_keluar_jumlah" class="block text-sm font-medium text-gray-700">Jumlah</label>
+                                                            <div class="flex items-center gap-2">
+                                                                 <input type="number" step="0.01" name="obat_keluar_jumlah" id="obat_keluar_jumlah"
+                                                                      placeholder="0"
+                                                                      class="px-2 py-1.5 mt-1 block w-full rounded-md border-gray-300 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                                                                      value="0" required>
+                                                                 <div x-show="selectedObatId" class="mt-2 flex items-center gap-1.5 text-sm">
+                                                                      <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                                                                           Tersedia: <span x-text="(() => {
+                                                                                const obat = {{ Js::from($stokObatOptions) }}.find(o => o.id == selectedObatId);
+                                                                                if (obat) {
+                                                                                     // Access jumlah_tersedia directly from the obat object
+                                                                                     const jumlahTersedia = obat.jumlah_tersedia ?? 0; 
+                                                                                     const satuan = obat.satuan ? ' ' + obat.satuan : ''; 
+                                                                                     return jumlahTersedia + satuan;
+                                                                                }
+                                                                                return '';
+                                                                           })()" class="ml-1 font-semibold">
                                                                            </span>
                                                                       </span>
                                                                  </div>

@@ -13,7 +13,6 @@ class CatatPerformaHarianModal extends Component
      public Collection $pakanJenisOptions; // Tipe hint untuk Collection
      public Collection $stokObatOptions; // Tipe hint untuk Collection
      public ?StandardPerformaHarian $standardHariIni;
-     public Collection $ringkasanPerformaHarian;
 
      /**
       * Create a new component instance.
@@ -22,14 +21,12 @@ class CatatPerformaHarianModal extends Component
           Periode $periodeAktif,
           Collection $pakanJenisOptions,
           Collection $stokObatOptions,
-          ?StandardPerformaHarian $standardHariIni = null,
-          ?Collection $ringkasanPerformaHarian = null
+          ?StandardPerformaHarian $standardHariIni = null
      ) {
           $this->periodeAktif = $periodeAktif;
           $this->pakanJenisOptions = $pakanJenisOptions;
           $this->stokObatOptions = $stokObatOptions;
           $this->standardHariIni = $standardHariIni;
-          $this->ringkasanPerformaHarian = $ringkasanPerformaHarian ?? collect();
      }
 
      /**
