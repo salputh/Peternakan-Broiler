@@ -32,8 +32,8 @@
                               <td class="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-900">{{ $item->satuan }}</td>
                               <td class="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-900">{{ $item->keterangan ?? '-' }}</td>
                               <td class="px-6 py-4 text-center whitespace-nowrap text-sm">
-                                   <a href="{{ route('stok_obat_keluar.edit', $item->id) }}" class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition">Edit</a>
-                                   <form action="{{ route('stok_obat_keluar.destroy', $item->id) }}" method="POST" class="inline">
+                                   <a href="#" class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition">Edit</a>
+                                   <form action="#" method="POST" class="inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition ml-2" onclick="return confirm('Yakin ingin menghapus data ini?')">Hapus</button>

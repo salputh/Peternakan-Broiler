@@ -101,7 +101,7 @@ class StokObatController extends Controller
           // --- 5) Dapatkan Daftar Detail Stok Obat Keluar ---
           // Mengambil semua transaksi keluar yang terkait dengan periode aktif, dengan eager loading relasi
           try {
-               $keluarList = StokObatKeluar::with(['stok_obat', 'dataPeriodes']) // Eager load relasi obat dan dataPeriodes
+               $keluarList = StokObatKeluar::with(['stokObats', 'dataPeriodes']) // Ubah dari 'stok_obat' ke 'stokObats'
                     ->whereHas('dataPeriodes', function ($query) use ($periodeAktif) {
                          $query->where('data_periode_id', $periodeAktif->id); // Menggunakan periode_id yang benar
                     })

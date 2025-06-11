@@ -158,6 +158,10 @@ Route::prefix('developer')->name('developer.')->middleware(['auth', 'role:develo
         'peternakan/{peternakan:slug}/kandang/{kandang:slug}/stok-obat/{masuk}',
         [StokObatMasukController::class, 'destroy']
     )->name('stok_obat.masuk.destroy');
+    Route::delete(
+        'peternakan/{peternakan:slug}/kandang/{kandang:slug}/stok-obat/{keluar}',
+        [StokObatMasukController::class, 'destroy']
+    )->name('stok_obat.keluar.destroy');
 
     // Data Harian
 });
